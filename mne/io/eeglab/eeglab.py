@@ -83,15 +83,18 @@ def _get_info(eeg, montage, eog=()):
         kind = 'user_defined'
         update_ch_names = False
         for chanloc in eeg.chanlocs:
-            ch_names.append(chanloc.labels)
-            if get_pos:
-                loc_x = _to_loc(chanloc.X)
-                loc_y = _to_loc(chanloc.Y)
-                loc_z = _to_loc(chanloc.Z)
-                locs = np.r_[-loc_y, loc_x, loc_z]
-                if not np.any(np.isnan(locs)):
-                    pos_ch_names.append(chanloc.labels)
-                    pos.append(locs)
+            if chanloc.labels not in ch_names: # Don't process duplicate channels
+                ch_names.append(chanloc.labels)
+                if get_pos:
+                    loc_x = _to_loc(chanloc.X)
+                    loc_y = _to_loc(chanloc.Y)
+                    loc_z = _to_loc(chanloc.Z)
+                    locs = np.r_[-loc_y, loc_x, loc_z]
+                    if not np.any(np.isnan(locs)):
+                        pos_ch_names.append(chanloc.labels)
+                        pos.append(locs)
+            else:
+                warn('Ignoring duplicate channel %s.' % chanloc.labels)
         n_channels_with_pos = len(pos_ch_names)
         info = create_info(ch_names, eeg.srate, ch_types='eeg')
         if n_channels_with_pos > 0:
